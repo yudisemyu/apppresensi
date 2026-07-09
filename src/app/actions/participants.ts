@@ -10,11 +10,16 @@ const participantSchema = z.object({
 })
 
 export async function addParticipant(formData: FormData) {
-  const data = Object.fromEntries(formData.entries())
+  const data = {
+    name: formData.get('name')?.toString() ?? '',
+    nim: formData.get('nim')?.toString() ?? ''
+  }
   const parsed = participantSchema.safeParse(data)
   
   if (!parsed.success) {
-    return { error: 'Data tidak valid' }
+    const fieldErrors = parsed.error.flatten().fieldErrors
+    const messages = Object.values(fieldErrors).flat().join(', ')
+    return { error: messages || 'Data tidak valid' }
   }
 
   try {

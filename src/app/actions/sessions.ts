@@ -15,7 +15,14 @@ const sessionSchema = z.object({
 })
 
 export async function createSession(formData: FormData) {
-  const data = Object.fromEntries(formData.entries())
+  const data = {
+    title: formData.get('title')?.toString() ?? '',
+    location: formData.get('location')?.toString() ?? '',
+    date: formData.get('date')?.toString() ?? '',
+    startTime: formData.get('startTime')?.toString() ?? '',
+    endTime: formData.get('endTime')?.toString() ?? '',
+    notes: formData.get('notes')?.toString() ?? ''
+  }
   const parsed = sessionSchema.safeParse(data)
   
   if (!parsed.success) {
