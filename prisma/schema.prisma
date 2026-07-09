@@ -1,0 +1,40 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Participant {
+  id          String       @id @default(cuid())
+  name        String
+  nim         String       @unique
+  createdAt   DateTime     @default(now())
+  attendances Attendance[]
+}
+
+model Session {
+  id          String       @id @default(cuid())
+  title       String
+  location    String
+  date        DateTime
+  startTime   String
+  endTime     String
+  status      String       @default("CLOSED") // "OPEN" | "CLOSED"
+  notes       String?
+  createdAt   DateTime     @default(now())
+  attendances Attendance[]
+}
+
+model Attendance {
+  id            String      @id @default(cuid())
+  participantId String
+  sessionId     String
+  attendedAt    DateTime    @default(now())
+  participant   Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  session       Session     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@unique([participantId, sessionId])
+}
