@@ -32,6 +32,8 @@ model Attendance {
   id            String      @id @default(cuid())
   participantId String
   sessionId     String
+  status        String      @default("HADIR") // "HADIR" | "IZIN" | "SAKIT"
+  notes         String?
   attendedAt    DateTime    @default(now())
   participant   Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
   session       Session     @relation(fields: [sessionId], references: [id], onDelete: Cascade)

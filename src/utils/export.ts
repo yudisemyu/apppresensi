@@ -24,9 +24,10 @@ export function exportToPDF(session: any) {
   
   // Header Table
   doc.text('No', 14, yPos)
-  doc.text('Nama', 30, yPos)
-  doc.text('NIM', 100, yPos)
-  doc.text('Waktu Hadir', 150, yPos)
+  doc.text('Nama', 25, yPos)
+  doc.text('Waktu', 110, yPos)
+  doc.text('Status', 135, yPos)
+  doc.text('Catatan', 160, yPos)
   
   yPos += 2
   doc.line(14, yPos, 190, yPos)
@@ -34,9 +35,10 @@ export function exportToPDF(session: any) {
   
   session.attendances.forEach((att: any, idx: number) => {
     doc.text(`${idx + 1}`, 14, yPos)
-    doc.text(att.participant.name, 30, yPos)
-    doc.text(att.participant.nim, 100, yPos)
-    doc.text(format(new Date(att.attendedAt), 'HH:mm:ss'), 150, yPos)
+    doc.text(att.participant.name.substring(0, 30), 25, yPos)
+    doc.text(format(new Date(att.attendedAt), 'HH:mm'), 110, yPos)
+    doc.text(att.status || 'HADIR', 135, yPos)
+    doc.text((att.notes || '-').substring(0, 20), 160, yPos)
     yPos += 8
     
     if (yPos > 280) {
@@ -54,7 +56,9 @@ export function exportToExcel(session: any) {
       'No': idx + 1,
       'Nama': att.participant.name,
       'NIM': att.participant.nim,
-      'Waktu Hadir': format(new Date(att.attendedAt), 'HH:mm:ss')
+      'Waktu Hadir': format(new Date(att.attendedAt), 'HH:mm:ss'),
+      'Status': att.status || 'HADIR',
+      'Catatan': att.notes || '-'
     }))
   )
   
@@ -82,14 +86,14 @@ export function exportOverallToPDF(sessions: any[], participants: any[]) {
   doc.text(`Dicetak: ${format(new Date(), 'dd MMMM yyyy, HH:mm', { locale: localeId })}`, 14, 28)
   doc.text(`Total Sesi: ${sessions.length}  |  Total Partisipan: ${participants.length}`, 14, 35)
 
-  // Build attendance lookup: participantId -> Set of sessionIds
-  const attendanceMap = new Map<string, Set<string>>()
+  // Build attendance lookup: participantId -> Map<sessionId, status>
+  const attendanceMap = new Map<string, Map<string, string>>()
   sessions.forEach((s) => {
     s.attendances.forEach((att: any) => {
       if (!attendanceMap.has(att.participantId)) {
-        attendanceMap.set(att.participantId, new Set())
+        attendanceMap.set(att.participantId, new Map())
       }
-      attendanceMap.get(att.participantId)!.add(s.id)
+      attendanceMap.get(att.participantId)!.set(s.id, att.status || 'HADIR')
     })
   })
 
@@ -126,15 +130,17 @@ export function exportOverallToPDF(sessions: any[], participants: any[]) {
     doc.text(p.name.substring(0, 25), 24, yPos)
     doc.text(p.nim, 74, yPos)
 
-    const attended = attendanceMap.get(p.id) || new Set()
+    const attended = attendanceMap.get(p.id) || new Map()
     let totalHadir = 0
 
     sessions.forEach((s, sIdx) => {
       const x = colStart + sIdx * colWidth
       if (x < 280) {
         if (attended.has(s.id)) {
-          doc.text('✓', x + 1, yPos)
-          totalHadir++
+          const status = attended.get(s.id)
+          const mark = status === 'HADIR' ? 'H' : status === 'IZIN' ? 'I' : 'S'
+          doc.text(mark, x + 1, yPos)
+          if (status === 'HADIR') totalHadir++
         } else {
           doc.text('-', x + 1, yPos)
         }
@@ -177,34 +183,41 @@ export function exportOverallToPDF(sessions: any[], participants: any[]) {
 
 export function exportOverallToExcel(sessions: any[], participants: any[]) {
   // Build attendance lookup
-  const attendanceMap = new Map<string, Set<string>>()
+  const attendanceMap = new Map<string, Map<string, string>>()
   sessions.forEach((s) => {
     s.attendances.forEach((att: any) => {
       if (!attendanceMap.has(att.participantId)) {
-        attendanceMap.set(att.participantId, new Set())
+        attendanceMap.set(att.participantId, new Map())
       }
-      attendanceMap.get(att.participantId)!.add(s.id)
+      attendanceMap.get(att.participantId)!.set(s.id, att.status || 'HADIR')
     })
   })
 
   // Build rows
   const rows = participants.map((p, idx) => {
-    const attended = attendanceMap.get(p.id) || new Set()
+    const attended = attendanceMap.get(p.id) || new Map()
     const row: Record<string, any> = {
       'No': idx + 1,
       'Nama': p.name,
       'NIM': p.nim,
     }
 
+    let totalHadir = 0
     sessions.forEach((s, sIdx) => {
       const label = `S${sIdx + 1}: ${s.title.substring(0, 20)}`
-      row[label] = attended.has(s.id) ? 'Hadir' : 'Tidak Hadir'
+      if (attended.has(s.id)) {
+        const st = attended.get(s.id)
+        row[label] = st
+        if (st === 'HADIR') totalHadir++
+      } else {
+        row[label] = 'Tidak Absen'
+      }
     })
 
-    row['Total Hadir'] = attended.size
+    row['Total Hadir'] = totalHadir
     row['Total Sesi'] = sessions.length
     row['Persentase'] = sessions.length > 0
-      ? `${Math.round((attended.size / sessions.length) * 100)}%`
+      ? `${Math.round((totalHadir / sessions.length) * 100)}%`
       : '0%'
 
     return row

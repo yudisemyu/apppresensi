@@ -10,6 +10,7 @@ import { notFound } from 'next/navigation'
 import { ArrowLeft, Trash2, Calendar, Clock, MapPin } from 'lucide-react'
 import { format } from 'date-fns'
 import { id as localeId } from 'date-fns/locale'
+import { cn } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -88,43 +89,55 @@ export default async function SessionDetailPage({ params }: { params: Promise<{ 
               {session.attendances.length > 0 && <ExportButton sessionId={session.id} />}
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nama</TableHead>
-                    <TableHead>NIM</TableHead>
-                    <TableHead>Waktu Hadir</TableHead>
-                    <TableHead className="w-[80px] text-right">Aksi</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {session.attendances.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
-                        Belum ada yang hadir.
-                      </TableCell>
+              {session.attendances.length === 0 ? (
+                <div className="text-center p-8 border-2 border-dashed border-black rounded-md mt-4">
+                  <div className="text-muted-foreground font-medium">Belum ada yang absen.</div>
+                </div>
+              ) : (
+                <Table className="mt-4 border-2 border-black">
+                  <TableHeader className="bg-muted">
+                    <TableRow className="border-b-2 border-black">
+                      <TableHead className="font-bold text-black">Nama</TableHead>
+                      <TableHead className="font-bold text-black">Waktu</TableHead>
+                      <TableHead className="font-bold text-black">Status</TableHead>
+                      <TableHead className="font-bold text-black">Catatan</TableHead>
+                      <TableHead className="w-[80px] text-right font-bold text-black">Aksi</TableHead>
                     </TableRow>
-                  ) : (
-                    session.attendances.map((att) => (
-                      <TableRow key={att.id}>
-                        <TableCell className="font-medium">{att.participant.name}</TableCell>
-                        <TableCell>{att.participant.nim}</TableCell>
-                        <TableCell>{format(new Date(att.attendedAt), 'HH:mm:ss', { locale: localeId })}</TableCell>
+                  </TableHeader>
+                  <TableBody>
+                    {session.attendances.map((att) => (
+                      <TableRow key={att.id} className="border-b-2 border-black/10">
+                        <TableCell className="font-bold">
+                          {att.participant.name}
+                          <div className="text-xs font-mono font-medium text-muted-foreground mt-1">{att.participant.nim}</div>
+                        </TableCell>
+                        <TableCell className="font-medium text-sm">{format(new Date(att.attendedAt), 'HH:mm:ss', { locale: localeId })}</TableCell>
+                        <TableCell>
+                          <span className={cn("px-2 py-1 rounded-sm text-xs font-bold border-2 border-black",
+                            att.status === 'HADIR' ? 'bg-primary text-white' :
+                            att.status === 'IZIN' ? 'bg-yellow-400 text-black' : 'bg-red-400 text-white'
+                          )}>
+                            {att.status || 'HADIR'}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-sm max-w-[150px] truncate" title={att.notes || '-'}>
+                          {att.notes || '-'}
+                        </TableCell>
                         <TableCell className="text-right">
                           <form action={async () => {
                             'use server'
                             await deleteAttendance(att.id, session.id)
                           }}>
-                            <Button variant="ghost" size="icon" type="submit" className="text-destructive">
+                            <Button variant="destructive" size="icon" type="submit" className="border-2 border-black neo-shadow hover:neo-shadow-hover h-8 w-8">
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </form>
                         </TableCell>
                       </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
             </CardContent>
           </Card>
         </div>

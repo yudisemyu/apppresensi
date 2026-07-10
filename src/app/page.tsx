@@ -7,6 +7,37 @@ import { Users, CalendarDays, Plus, FileBarChart } from 'lucide-react'
 export const dynamic = 'force-dynamic'
 
 export default async function Dashboard() {
+  const todayStart = new Date()
+  todayStart.setHours(0, 0, 0, 0)
+  const todayEnd = new Date()
+  todayEnd.setHours(23, 59, 59, 999)
+
+  // Lazy Init Daily Session
+  const dailySessionExists = await prisma.session.findFirst({
+    where: {
+      title: 'Absensi Harian',
+      date: {
+        gte: todayStart,
+        lte: todayEnd,
+      }
+    }
+  })
+
+  if (!dailySessionExists) {
+    const now = new Date()
+    await prisma.session.create({
+      data: {
+        title: 'Absensi Harian',
+        location: 'Posko KKN',
+        date: now,
+        startTime: '08:00',
+        endTime: '10:00',
+        status: 'OPEN',
+        notes: 'Sesi otomatis harian'
+      }
+    })
+  }
+
   const [sessionsCount, participantsCount, activeSessions] = await Promise.all([
     prisma.session.count(),
     prisma.participant.count(),

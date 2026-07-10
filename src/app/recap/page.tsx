@@ -27,17 +27,20 @@ export default async function RecapPage() {
   ])
 
   // Build attendance lookup
-  const attendanceMap = new Map<string, Set<string>>()
+  const attendanceMap = new Map<string, Map<string, string>>()
   sessions.forEach((s) => {
     s.attendances.forEach((att) => {
       if (!attendanceMap.has(att.participantId)) {
-        attendanceMap.set(att.participantId, new Set())
+        attendanceMap.set(att.participantId, new Map())
       }
-      attendanceMap.get(att.participantId)!.add(s.id)
+      attendanceMap.get(att.participantId)!.set(s.id, att.status || 'HADIR')
     })
   })
 
-  const totalAttendances = sessions.reduce((sum, s) => sum + s.attendances.length, 0)
+  let totalHadir = 0
+  sessions.forEach(s => {
+    totalHadir += s.attendances.filter(a => (a.status || 'HADIR') === 'HADIR').length
+  })
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-8">
@@ -73,11 +76,11 @@ export default async function RecapPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Kehadiran</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Hadir</CardTitle>
             <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{totalAttendances}</div>
+            <div className="text-3xl font-bold">{totalHadir}</div>
           </CardContent>
         </Card>
       </div>
@@ -111,27 +114,35 @@ export default async function RecapPage() {
                 </TableHeader>
                 <TableBody>
                   {participants.map((p, idx) => {
-                    const attended = attendanceMap.get(p.id) || new Set()
+                    const attended = attendanceMap.get(p.id) || new Map()
+                    const hadirCount = Array.from(attended.values()).filter(st => st === 'HADIR').length
                     const percentage = sessions.length > 0
-                      ? Math.round((attended.size / sessions.length) * 100)
+                      ? Math.round((hadirCount / sessions.length) * 100)
                       : 0
                     return (
                       <TableRow key={p.id}>
-                        <TableCell className="sticky left-0 bg-card">{idx + 1}</TableCell>
-                        <TableCell className="sticky left-[40px] bg-card font-medium">{p.name}</TableCell>
-                        <TableCell className="sticky left-[200px] bg-card">{p.nim}</TableCell>
-                        {sessions.map((s) => (
-                          <TableCell key={s.id} className="text-center">
-                            {attended.has(s.id) ? (
-                              <span className="text-[#16A34A] font-bold">✓</span>
-                            ) : (
-                              <span className="text-muted-foreground">-</span>
-                            )}
-                          </TableCell>
-                        ))}
-                        <TableCell className="text-center font-semibold">{attended.size}/{sessions.length}</TableCell>
-                        <TableCell className="text-center">
-                          <span className={`text-sm font-medium ${percentage >= 75 ? 'text-[#16A34A]' : percentage >= 50 ? 'text-amber-500' : 'text-[#DC2626]'}`}>
+                        <TableCell className="sticky left-0 bg-card border-r-2 border-black">{idx + 1}</TableCell>
+                        <TableCell className="sticky left-[40px] bg-card font-bold border-r-2 border-black">{p.name}</TableCell>
+                        <TableCell className="sticky left-[200px] bg-card border-r-2 border-black">{p.nim}</TableCell>
+                        {sessions.map((s) => {
+                          const status = attended.get(s.id)
+                          return (
+                            <TableCell key={s.id} className="text-center font-bold border-r border-black/20">
+                              {status === 'HADIR' ? (
+                                <span className="text-primary">H</span>
+                              ) : status === 'IZIN' ? (
+                                <span className="text-yellow-500">I</span>
+                              ) : status === 'SAKIT' ? (
+                                <span className="text-red-500">S</span>
+                              ) : (
+                                <span className="text-muted-foreground font-normal">-</span>
+                              )}
+                            </TableCell>
+                          )
+                        })}
+                        <TableCell className="text-center font-bold border-l-2 border-black bg-muted/20">{hadirCount}/{sessions.length}</TableCell>
+                        <TableCell className="text-center font-bold bg-muted/20">
+                          <span className={`text-sm ${percentage >= 75 ? 'text-primary' : percentage >= 50 ? 'text-yellow-500' : 'text-red-500'}`}>
                             {percentage}%
                           </span>
                         </TableCell>
