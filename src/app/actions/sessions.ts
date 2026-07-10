@@ -23,6 +23,8 @@ export async function createSession(data: z.infer<typeof sessionSchema>) {
     return { error: messages || 'Data tidak valid' }
   }
 
+  let sessionId: string
+
   try {
     const session = await prisma.session.create({
       data: {
@@ -35,12 +37,14 @@ export async function createSession(data: z.infer<typeof sessionSchema>) {
         status: 'CLOSED'
       }
     })
-    revalidatePath('/sessions')
-    revalidatePath('/')
-    redirect(`/sessions/${session.id}`)
+    sessionId = session.id
   } catch (e) {
     return { error: 'Gagal membuat sesi' }
   }
+
+  revalidatePath('/sessions')
+  revalidatePath('/')
+  redirect(`/sessions/${sessionId}`)
 }
 
 export async function deleteSession(id: string) {
