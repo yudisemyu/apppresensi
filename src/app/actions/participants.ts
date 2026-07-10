@@ -9,11 +9,7 @@ const participantSchema = z.object({
   nim: z.string().min(1, 'NIM wajib diisi')
 })
 
-export async function addParticipant(formData: FormData) {
-  const data = {
-    name: formData.get('name')?.toString() ?? '',
-    nim: formData.get('nim')?.toString() ?? ''
-  }
+export async function addParticipant(data: z.infer<typeof participantSchema>) {
   const parsed = participantSchema.safeParse(data)
   
   if (!parsed.success) {

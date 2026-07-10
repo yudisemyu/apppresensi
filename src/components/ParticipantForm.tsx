@@ -20,16 +20,14 @@ export default function ParticipantForm() {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const { register, handleSubmit, reset, formState: { errors } } = useForm<FormData>({
-    resolver: zodResolver(schema)
+    resolver: zodResolver(schema),
+    defaultValues: { name: '', nim: '' }
   })
 
   const onSubmit = (data: FormData) => {
     setError(null)
     startTransition(async () => {
-      const formData = new FormData()
-      formData.append('name', data.name)
-      formData.append('nim', data.nim)
-      const res = await addParticipant(formData)
+      const res = await addParticipant(data)
       if (res.error) {
         setError(res.error)
       } else {

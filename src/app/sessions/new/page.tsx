@@ -35,11 +35,7 @@ export default function NewSessionPage() {
   const onSubmit = (data: FormData) => {
     setError(null)
     startTransition(async () => {
-      const formData = new FormData()
-      Object.entries(data).forEach(([key, value]) => {
-        if (value) formData.append(key, value)
-      })
-      const res = await createSession(formData)
+      const res = await createSession(data)
       if (res?.error) {
         setError(res.error)
       }

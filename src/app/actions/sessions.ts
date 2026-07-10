@@ -14,19 +14,13 @@ const sessionSchema = z.object({
   notes: z.string().optional()
 })
 
-export async function createSession(formData: FormData) {
-  const data = {
-    title: formData.get('title')?.toString() ?? '',
-    location: formData.get('location')?.toString() ?? '',
-    date: formData.get('date')?.toString() ?? '',
-    startTime: formData.get('startTime')?.toString() ?? '',
-    endTime: formData.get('endTime')?.toString() ?? '',
-    notes: formData.get('notes')?.toString() ?? ''
-  }
+export async function createSession(data: z.infer<typeof sessionSchema>) {
   const parsed = sessionSchema.safeParse(data)
   
   if (!parsed.success) {
-    return { error: 'Data tidak valid' }
+    const fieldErrors = parsed.error.flatten().fieldErrors
+    const messages = Object.values(fieldErrors).flat().join(', ')
+    return { error: messages || 'Data tidak valid' }
   }
 
   try {
