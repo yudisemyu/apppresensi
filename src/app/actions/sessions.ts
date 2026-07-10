@@ -39,12 +39,13 @@ export async function createSession(data: z.infer<typeof sessionSchema>) {
     })
     sessionId = session.id
   } catch (e) {
+    console.error("Prisma error:", e)
     return { error: 'Gagal membuat sesi' }
   }
 
   revalidatePath('/sessions')
   revalidatePath('/')
-  redirect(`/sessions/${sessionId}`)
+  return { success: true, sessionId }
 }
 
 export async function deleteSession(id: string) {

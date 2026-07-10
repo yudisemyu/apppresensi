@@ -38,6 +38,8 @@ export default function NewSessionPage() {
       const res = await createSession(data)
       if (res?.error) {
         setError(res.error)
+      } else if (res?.success) {
+        router.push(`/sessions/${res.sessionId}`)
       }
     })
   }
