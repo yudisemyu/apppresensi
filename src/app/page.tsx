@@ -47,7 +47,7 @@ export default async function Dashboard() {
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-8">
       <header className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard KKN</h1>
+        <h1 className="text-3xl font-black uppercase tracking-tight">Absen Bocil Balesari</h1>
         <div className="flex gap-4">
           <Link href="/participants">
             <Button variant="outline">Kelola Partisipan</Button>
