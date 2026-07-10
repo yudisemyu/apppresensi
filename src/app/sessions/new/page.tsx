@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
+import { format } from 'date-fns'
 
 const schema = z.object({
   title: z.string().min(1, 'Judul wajib diisi'),
@@ -28,8 +29,16 @@ export default function NewSessionPage() {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   
+  const now = new Date()
+  const later = new Date(now.getTime() + 2 * 60 * 60 * 1000)
+
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
-    resolver: zodResolver(schema)
+    resolver: zodResolver(schema),
+    defaultValues: {
+      date: format(now, 'yyyy-MM-dd'),
+      startTime: format(now, 'HH:mm'),
+      endTime: format(later, 'HH:mm'),
+    }
   })
 
   const onSubmit = (data: FormData) => {

@@ -16,11 +16,11 @@ export default async function ParticipantsPage() {
 
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-8">
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 border-b-4 border-black pb-4 mb-8">
         <Link href="/">
-          <Button variant="ghost" size="icon"><ArrowLeft className="h-5 w-5" /></Button>
+          <Button variant="ghost" size="icon" className="border-2 border-black neo-shadow"><ArrowLeft className="h-5 w-5" /></Button>
         </Link>
-        <h1 className="text-3xl font-bold tracking-tight">Kelola Partisipan</h1>
+        <h1 className="text-3xl font-black uppercase tracking-tight">Kelola Partisipan</h1>
       </div>
 
       <div className="grid gap-8 md:grid-cols-3">
@@ -35,40 +35,39 @@ export default async function ParticipantsPage() {
             </CardHeader>
             <CardContent>
               <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nama</TableHead>
-                    <TableHead>NIM</TableHead>
-                    <TableHead className="w-[100px] text-right">Aksi</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {participants.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={3} className="text-center text-muted-foreground">
-                        Belum ada partisipan.
-                      </TableCell>
+              {participants.length === 0 ? (
+                <div className="text-center p-8 border-2 border-dashed border-black rounded-md mt-4">
+                  <div className="text-muted-foreground font-medium">Belum ada partisipan.</div>
+                </div>
+              ) : (
+                <Table className="mt-4 border-2 border-black">
+                  <TableHeader className="bg-muted">
+                    <TableRow className="border-b-2 border-black">
+                      <TableHead className="font-bold text-black">Nama</TableHead>
+                      <TableHead className="font-bold text-black">NIM</TableHead>
+                      <TableHead className="w-[80px] text-right font-bold text-black">Aksi</TableHead>
                     </TableRow>
-                  ) : (
-                    participants.map((p) => (
-                      <TableRow key={p.id}>
-                        <TableCell className="font-medium">{p.name}</TableCell>
-                        <TableCell>{p.nim}</TableCell>
+                  </TableHeader>
+                  <TableBody>
+                    {participants.map((p) => (
+                      <TableRow key={p.id} className="border-b-2 border-black/10">
+                        <TableCell className="font-bold">{p.name}</TableCell>
+                        <TableCell className="font-medium font-mono">{p.nim}</TableCell>
                         <TableCell className="text-right">
                           <form action={async () => {
                             'use server'
                             await deleteParticipant(p.id)
                           }}>
-                            <Button variant="ghost" size="icon" type="submit" className="text-destructive">
+                            <Button variant="destructive" size="icon" type="submit" className="border-2 border-black neo-shadow hover:neo-shadow-hover h-8 w-8">
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </form>
                         </TableCell>
                       </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
             </CardContent>
           </Card>
         </div>

@@ -7,9 +7,10 @@ import { Users, CalendarDays, Plus, FileBarChart } from 'lucide-react'
 export const dynamic = 'force-dynamic'
 
 export default async function Dashboard() {
-  const [sessionsCount, participantsCount] = await Promise.all([
+  const [sessionsCount, participantsCount, activeSessions] = await Promise.all([
     prisma.session.count(),
     prisma.participant.count(),
+    prisma.session.findMany({ where: { status: 'OPEN' }, orderBy: { date: 'desc' } })
   ])
 
   return (
@@ -57,6 +58,27 @@ export default async function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {activeSessions.length > 0 && (
+        <div className="space-y-4 pt-4">
+          <h2 className="text-xl font-bold border-b-2 border-black pb-2 inline-block">🔥 Sesi Aktif Saat Ini</h2>
+          <div className="grid gap-4 md:grid-cols-2">
+            {activeSessions.map(session => (
+              <Card key={session.id} className="bg-secondary text-secondary-foreground">
+                <CardHeader>
+                  <CardTitle>{session.title}</CardTitle>
+                </CardHeader>
+                <CardContent className="flex justify-between items-center">
+                  <span className="text-sm font-medium">{session.location}</span>
+                  <Link href={`/sessions/${session.id}`}>
+                    <Button variant="default" className="neo-shadow hover:neo-shadow-hover">Buka QR Code</Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
