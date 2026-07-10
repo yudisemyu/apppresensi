@@ -34,7 +34,6 @@ export default async function ParticipantsPage() {
               <CardTitle>Daftar Partisipan ({participants.length})</CardTitle>
             </CardHeader>
             <CardContent>
-              <Table>
               {participants.length === 0 ? (
                 <div className="text-center p-8 border-2 border-dashed border-black rounded-md mt-4">
                   <div className="text-muted-foreground font-medium">Belum ada partisipan.</div>
