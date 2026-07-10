@@ -46,20 +46,20 @@ export default async function Dashboard() {
 
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-8">
-      <header className="flex justify-between items-center">
-        <h1 className="text-3xl font-black uppercase tracking-tight">Absen Bocil Balesari</h1>
-        <div className="flex gap-4">
+      <header className="space-y-6">
+        <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tight border-b-4 border-black pb-4">Absen Bocil Balesari</h1>
+        <div className="flex flex-wrap gap-4">
           <Link href="/participants">
-            <Button variant="outline">Kelola Partisipan</Button>
+            <Button variant="outline" className="border-2 border-black neo-shadow hover:neo-shadow-hover">Kelola Partisipan</Button>
           </Link>
           <Link href="/sessions">
-            <Button variant="outline">Kelola Sesi</Button>
+            <Button variant="outline" className="border-2 border-black neo-shadow hover:neo-shadow-hover">Kelola Sesi</Button>
           </Link>
           <Link href="/recap">
-            <Button variant="outline"><FileBarChart className="mr-2 h-4 w-4" /> Rekap</Button>
+            <Button variant="outline" className="border-2 border-black neo-shadow hover:neo-shadow-hover"><FileBarChart className="mr-2 h-4 w-4" /> Rekap</Button>
           </Link>
           <Link href="/sessions/new">
-            <Button><Plus className="mr-2 h-4 w-4" /> Sesi Baru</Button>
+            <Button className="border-2 border-black neo-shadow hover:neo-shadow-hover"><Plus className="mr-2 h-4 w-4" /> Sesi Baru</Button>
           </Link>
         </div>
       </header>
