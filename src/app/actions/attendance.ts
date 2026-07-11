@@ -28,8 +28,9 @@ export async function submitAttendance(
     }
 
     // Validasi Waktu
-    const now = new Date()
-    const currentMinutes = now.getHours() * 60 + now.getMinutes()
+    const nowWibStr = new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" })
+    const nowWib = new Date(nowWibStr)
+    const currentMinutes = nowWib.getHours() * 60 + nowWib.getMinutes()
     
     const [startH, startM] = session.startTime.split(':').map(Number)
     const startMinutes = startH * 60 + startM
