@@ -1,6 +1,6 @@
-// Koordinat Posko KKN (Silakan diubah sesuai lokasi asli)
-export const POSKO_LAT = -6.200000 // Ganti dengan Latitude posko
-export const POSKO_LNG = 106.816666 // Ganti dengan Longitude posko
+// Koordinat Posko KKN Balesari
+export const POSKO_LAT = -7.4205097
+export const POSKO_LNG = 110.1893205
 export const MAX_RADIUS_KM = 10 // Maksimal jarak absen dalam kilometer
 
 /**
