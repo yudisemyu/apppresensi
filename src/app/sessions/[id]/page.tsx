@@ -11,6 +11,7 @@ import { ArrowLeft, Trash2, Calendar, Clock, MapPin } from 'lucide-react'
 import { format } from 'date-fns'
 import { id as localeId } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
+import { formatWIB } from '@/lib/time'
 
 export const dynamic = 'force-dynamic'
 
@@ -111,7 +112,7 @@ export default async function SessionDetailPage({ params }: { params: Promise<{ 
                           {att.participant.name}
                           <div className="text-xs font-mono font-medium text-muted-foreground mt-1">{att.participant.nim}</div>
                         </TableCell>
-                        <TableCell className="font-medium text-sm">{format(new Date(att.attendedAt), 'HH:mm:ss', { locale: localeId })}</TableCell>
+                        <TableCell className="font-medium text-sm">{formatWIB(att.attendedAt)}</TableCell>
                         <TableCell>
                           <span className={cn("px-2 py-1 rounded-sm text-xs font-bold border-2 border-black",
                             att.status === 'HADIR' ? 'bg-primary text-white' :
