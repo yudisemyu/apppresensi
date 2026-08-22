@@ -82,3 +82,34 @@ export async function deleteAttendance(id: string, sessionId: string) {
     return { error: 'Gagal menghapus absensi' }
   }
 }
+
+export async function markAllPresent(sessionId: string) {
+  try {
+    const participants = await prisma.participant.findMany()
+    const existingAttendances = await prisma.attendance.findMany({
+      where: { sessionId }
+    })
+    const existingParticipantIds = new Set(existingAttendances.map(a => a.participantId))
+
+    const newAttendances = participants
+      .filter(p => !existingParticipantIds.has(p.id))
+      .map(p => ({
+        participantId: p.id,
+        sessionId,
+        status: 'HADIR'
+      }))
+
+    if (newAttendances.length > 0) {
+      await prisma.attendance.createMany({
+        data: newAttendances
+      })
+    }
+    
+    revalidatePath(`/sessions/${sessionId}`)
+    revalidatePath('/recap')
+    return { success: true }
+  } catch (e) {
+    console.error(e)
+    return { error: 'Gagal menandai kehadiran massal' }
+  }
+}

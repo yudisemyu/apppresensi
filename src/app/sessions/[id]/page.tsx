@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { toggleSessionStatus, deleteAttendance } from '@/app/actions/sessions'
+import { toggleSessionStatus, deleteAttendance, markAllPresent } from '@/app/actions/sessions'
 import QRCodeCard from '@/components/QRCodeCard'
 import ExportButton from '@/components/ExportButton'
 import Link from 'next/link'
@@ -87,7 +87,17 @@ export default async function SessionDetailPage({ params }: { params: Promise<{ 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Daftar Hadir ({session.attendances.length})</CardTitle>
-              {session.attendances.length > 0 && <ExportButton sessionId={session.id} />}
+              <div className="flex items-center gap-2">
+                <form action={async () => {
+                  'use server'
+                  await markAllPresent(session.id)
+                }}>
+                  <Button type="submit" variant="secondary" size="sm" className="border-2 border-black neo-shadow hover:neo-shadow-hover font-bold">
+                    Hadirkan Semua
+                  </Button>
+                </form>
+                {session.attendances.length > 0 && <ExportButton sessionId={session.id} />}
+              </div>
             </CardHeader>
             <CardContent>
               {session.attendances.length === 0 ? (
