@@ -360,7 +360,10 @@ export function exportOverallToExcel(sessions: any[], participants: any[]) {
       if (!attendanceMap.has(att.participantId)) {
         attendanceMap.set(att.participantId, new Map())
       }
-      attendanceMap.get(att.participantId)!.set(s.id, att.status || 'HADIR')
+      attendanceMap.get(att.participantId)!.set(s.id, {
+        status: att.status || 'HADIR',
+        notes: att.notes
+      })
     })
   })
 
@@ -374,7 +377,7 @@ export function exportOverallToExcel(sessions: any[], participants: any[]) {
     ['REKAP DAFTAR HADIR KULIAH KERJA NYATA (KKN)'],
     [],
     ['Periode', `${firstDate} s/d ${lastDate}`],
-    ['Jumlah Pertemuan', sessions.length],
+    ['Jumlah Hari Absensi', sessions.length],
     ['Jumlah Peserta', participants.length],
     [],
   ]
@@ -386,7 +389,7 @@ export function exportOverallToExcel(sessions: any[], participants: any[]) {
     const dateLabel = format(new Date(s.date), 'dd/MM')
     tableHeader.push(`${dayName} ${dateLabel}`)
   })
-  tableHeader.push('Total Hadir', 'Total Pertemuan', 'Persentase')
+  tableHeader.push('Total Hadir', 'Total Hari Absensi', 'Persentase')
   infoRows.push(tableHeader)
 
   // Data rows
@@ -397,9 +400,16 @@ export function exportOverallToExcel(sessions: any[], participants: any[]) {
     let totalHadir = 0
     sortedSessions.forEach((s) => {
       if (attended.has(s.id)) {
-        const st = attended.get(s.id)
-        const statusText = st === 'HADIR' ? 'Hadir' : st === 'IZIN' ? 'Izin' : st === 'SAKIT' ? 'Sakit' : 'Hadir'
-        row.push(statusText)
+        const attData = attended.get(s.id)
+        const st = attData.status
+        const notes = attData.notes?.trim()
+        
+        let cellText = st === 'HADIR' ? 'Hadir' : st === 'IZIN' ? 'Izin' : st === 'SAKIT' ? 'Sakit' : 'Hadir'
+        if ((st === 'IZIN' || st === 'SAKIT') && notes) {
+          cellText += ` - ${notes}`
+        }
+        
+        row.push(cellText)
         if (st === 'HADIR') totalHadir++
       } else {
         row.push('-')
@@ -444,8 +454,8 @@ export function exportOverallToExcel(sessions: any[], participants: any[]) {
   // Column widths
   worksheet['!cols'] = [
     { wch: 5 }, { wch: 30 }, { wch: 18 },
-    ...sortedSessions.map(() => ({ wch: 12 })),
-    { wch: 12 }, { wch: 16 }, { wch: 12 }
+    ...sortedSessions.map(() => ({ wch: 20 })),
+    { wch: 12 }, { wch: 18 }, { wch: 12 }
   ]
 
   detailSheet['!cols'] = [
