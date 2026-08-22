@@ -354,7 +354,7 @@ export function exportOverallToPDF(sessions: any[], participants: any[]) {
 
 export function exportOverallToExcel(sessions: any[], participants: any[]) {
   // Build attendance lookup
-  const attendanceMap = new Map<string, Map<string, string>>()
+  const attendanceMap = new Map<string, Map<string, any>>()
   sessions.forEach((s) => {
     s.attendances.forEach((att: any) => {
       if (!attendanceMap.has(att.participantId)) {
