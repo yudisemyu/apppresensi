@@ -43,28 +43,8 @@ export default function AttendanceForm({ sessionId, participants }: { sessionId:
 
     setMessage(null)
 
-    // Jika hadir, wajib baca GPS
-    if (status === 'HADIR') {
-      if (!navigator.geolocation) {
-        setMessage({ type: 'error', text: 'Browser tidak mendukung GPS' })
-        return
-      }
-
-      setIsLocating(true)
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setIsLocating(false)
-          executeSubmit(position.coords.latitude, position.coords.longitude)
-        },
-        (error) => {
-          setIsLocating(false)
-          setMessage({ type: 'error', text: 'Gagal mendapatkan lokasi. Tolong izinkan akses lokasi (GPS).' })
-        },
-        { enableHighAccuracy: true, timeout: 10000 }
-      )
-    } else {
-      executeSubmit() // Izin/Sakit tidak butuh GPS
-    }
+    // Langsung submit tanpa GPS
+    executeSubmit(0, 0)
   }
 
   const executeSubmit = (lat?: number, lng?: number) => {
@@ -151,11 +131,7 @@ export default function AttendanceForm({ sessionId, participants }: { sessionId:
             </div>
           )}
 
-          {status === 'HADIR' && (
-             <div className="text-xs text-muted-foreground mt-2 flex items-center">
-               <MapPin className="w-3 h-3 mr-1 inline" /> Validasi GPS 10km akan dilakukan
-             </div>
-          )}
+
         </div>
       )}
       
@@ -163,8 +139,8 @@ export default function AttendanceForm({ sessionId, participants }: { sessionId:
         <p className="p-3 bg-destructive text-destructive-foreground font-bold border-2 border-black neo-shadow text-sm">{message.text}</p>
       )}
 
-      <Button type="submit" size="lg" className="w-full text-lg h-14 uppercase tracking-wider" disabled={isPending || isLocating || !selectedId}>
-        {isLocating ? 'Membaca GPS...' : isPending ? 'Mengirim...' : 'Konfirmasi Hadir'}
+      <Button type="submit" size="lg" className="w-full text-lg h-14 uppercase tracking-wider" disabled={isPending || !selectedId}>
+        {isPending ? 'Mengirim...' : 'Konfirmasi Hadir'}
       </Button>
     </form>
   )

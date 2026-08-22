@@ -2,7 +2,6 @@
 
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
-import { isWithinRadius } from '@/lib/geo'
 
 export async function submitAttendance(
   sessionId: string, 
@@ -27,33 +26,7 @@ export async function submitAttendance(
       return { error: 'Sesi absensi sudah ditutup (Manual)' }
     }
 
-    // Validasi Waktu
-    const nowWibStr = new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" })
-    const nowWib = new Date(nowWibStr)
-    const currentMinutes = nowWib.getHours() * 60 + nowWib.getMinutes()
-    
-    const [startH, startM] = session.startTime.split(':').map(Number)
-    const startMinutes = startH * 60 + startM
-    const [endH, endM] = session.endTime.split(':').map(Number)
-    const endMinutes = endH * 60 + endM
-
-    if (currentMinutes < startMinutes) {
-      return { error: `Sesi baru akan dibuka pukul ${session.startTime}` }
-    }
-    if (currentMinutes > endMinutes) {
-      return { error: `Batas waktu absen (deadline) sudah lewat sejak pukul ${session.endTime}` }
-    }
-
-    // Validasi Jarak (Hanya jika status HADIR)
-    if (status === 'HADIR') {
-      if (!lat || !lng) {
-        return { error: 'Gagal membaca lokasi. Pastikan GPS aktif dan izin lokasi diberikan.' }
-      }
-      const geo = isWithinRadius(lat, lng)
-      if (!geo.valid) {
-        return { error: `Terlalu jauh dari posko! Jarak Anda: ${geo.distance.toFixed(2)}km (Maksimal 10km).` }
-      }
-    }
+    // Validasi Waktu dan Lokasi dimatikan sesuai permintaan
 
     await prisma.attendance.create({
       data: {
