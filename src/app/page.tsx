@@ -15,30 +15,7 @@ export default async function Dashboard() {
   const todayEnd = new Date(nowWib)
   todayEnd.setHours(23, 59, 59, 999)
 
-  // Lazy Init Daily Session
-  const dailySessionExists = await prisma.session.findFirst({
-    where: {
-      title: 'Absensi Harian',
-      date: {
-        gte: todayStart,
-        lte: todayEnd,
-      }
-    }
-  })
 
-  if (!dailySessionExists) {
-    await prisma.session.create({
-      data: {
-        title: 'Absensi Harian',
-        location: 'Posko KKN',
-        date: todayStart,
-        startTime: '08:00',
-        endTime: '10:00',
-        status: 'OPEN',
-        notes: 'Sesi otomatis harian'
-      }
-    })
-  }
 
   const [sessionsCount, participantsCount, activeSessions] = await Promise.all([
     prisma.session.count(),
