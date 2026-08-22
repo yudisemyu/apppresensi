@@ -51,9 +51,9 @@ export function exportToPDF(session: any) {
   doc.setFontSize(9)
   const colNo = 14
   const colNama = 26
-  const colNIM = 90
-  const colWaktu = 132
-  const colStatus = 158
+  const colNIM = 80
+  const colWaktu = 110
+  const colKet = 135
   const colTtd = 180
 
   // Header background
@@ -66,8 +66,8 @@ export function exportToPDF(session: any) {
   doc.text('No', colNo, yPos)
   doc.text('Nama Lengkap', colNama, yPos)
   doc.text('NIM', colNIM, yPos)
-  doc.text('Jam Hadir', colWaktu, yPos)
-  doc.text('Keterangan', colStatus, yPos)
+  doc.text('Jam', colWaktu, yPos)
+  doc.text('Keterangan', colKet, yPos)
   doc.text('Tanda Tangan', colTtd, yPos)
 
   yPos += 8
@@ -75,18 +75,26 @@ export function exportToPDF(session: any) {
   // Table rows
   doc.setFontSize(9)
   session.attendances.forEach((att: any, idx: number) => {
+    // Build keterangan: status + alasan
+    const statusLabel = att.status === 'HADIR' ? 'Hadir' : att.status === 'IZIN' ? 'Izin' : att.status === 'SAKIT' ? 'Sakit' : 'Hadir'
+    const reason = att.notes?.trim()
+    const keterangan = reason ? `${statusLabel} - ${reason}` : statusLabel
+
+    // Determine row height based on keterangan length
+    const maxKetWidth = colTtd - colKet - 2
+    const ketLines = doc.splitTextToSize(keterangan, maxKetWidth)
+    const rowHeight = Math.max(8, ketLines.length * 5 + 3)
+
     // Row border
-    doc.rect(colNo - 1, yPos - 5, 187, 8)
+    doc.rect(colNo - 1, yPos - 5, 187, rowHeight)
 
     doc.text(`${idx + 1}`, colNo + 2, yPos)
-    doc.text(att.participant.name.substring(0, 28), colNama, yPos)
+    doc.text(att.participant.name.substring(0, 24), colNama, yPos)
     doc.text(att.participant.nim || '-', colNIM, yPos)
-    doc.text(format(new Date(att.attendedAt), 'HH:mm') + ' WIB', colWaktu, yPos)
+    doc.text(format(new Date(att.attendedAt), 'HH:mm'), colWaktu, yPos)
+    doc.text(ketLines, colKet, yPos)
 
-    const statusText = att.status === 'HADIR' ? 'Hadir' : att.status === 'IZIN' ? 'Izin' : att.status === 'SAKIT' ? 'Sakit' : 'Hadir'
-    doc.text(statusText, colStatus, yPos)
-
-    yPos += 8
+    yPos += rowHeight
 
     if (yPos > 270) {
       doc.addPage()
@@ -127,7 +135,7 @@ export function exportToExcel(session: any) {
     ['Tempat', session.location],
     ...(session.notes ? [['Keterangan', session.notes]] : []),
     [],
-    ['No', 'Nama Lengkap', 'NIM', 'Jam Hadir', 'Keterangan', 'Tanda Tangan'],
+    ['No', 'Nama Lengkap', 'NIM', 'Jam Hadir', 'Keterangan', 'Alasan', 'Tanda Tangan'],
   ]
 
   // Data rows
@@ -139,6 +147,7 @@ export function exportToExcel(session: any) {
       att.participant.nim || '-',
       format(new Date(att.attendedAt), 'HH:mm') + ' WIB',
       statusText,
+      att.notes || '-',
       ''
     ]
   })
@@ -154,13 +163,14 @@ export function exportToExcel(session: any) {
     { wch: 30 },
     { wch: 18 },
     { wch: 14 },
-    { wch: 14 },
+    { wch: 12 },
+    { wch: 30 },
     { wch: 18 },
   ]
 
   // Merge title row
   worksheet['!merges'] = [
-    { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }
+    { s: { r: 0, c: 0 }, e: { r: 0, c: 6 } }
   ]
 
   XLSX.writeFile(workbook, `Daftar_Hadir_KKN_${format(new Date(session.date), 'dd-MM-yyyy')}.xlsx`)
