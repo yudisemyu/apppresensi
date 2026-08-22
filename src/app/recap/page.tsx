@@ -58,7 +58,7 @@ export default async function RecapPage() {
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Sesi</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Pertemuan</CardTitle>
             <CalendarDays className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -67,7 +67,7 @@ export default async function RecapPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Partisipan</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Peserta</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -85,7 +85,7 @@ export default async function RecapPage() {
         </Card>
       </div>
 
-      {/* Overall Attendance Matrix */}
+      {/* Overall Attendance Matrix — using dates instead of session codes */}
       <Card>
         <CardHeader>
           <CardTitle>Matriks Kehadiran</CardTitle>
@@ -103,9 +103,11 @@ export default async function RecapPage() {
                     <TableHead className="sticky left-0 bg-card z-10 min-w-[40px]">No</TableHead>
                     <TableHead className="sticky left-[40px] bg-card z-10 min-w-[160px]">Nama</TableHead>
                     <TableHead className="sticky left-[200px] bg-card z-10 min-w-[100px]">NIM</TableHead>
-                    {sessions.map((s, idx) => (
+                    {sessions.map((s) => (
                       <TableHead key={s.id} className="text-center min-w-[80px]" title={`${s.title} - ${format(new Date(s.date), 'dd MMM yyyy', { locale: localeId })}`}>
-                        S{idx + 1}
+                        <div className="text-xs leading-tight">
+                          <div>{format(new Date(s.date), 'dd/MM')}</div>
+                        </div>
                       </TableHead>
                     ))}
                     <TableHead className="text-center min-w-[80px] font-bold">Total</TableHead>
@@ -156,18 +158,18 @@ export default async function RecapPage() {
         </CardContent>
       </Card>
 
-      {/* Session Legend */}
+      {/* Detail per tanggal */}
       <Card>
         <CardHeader>
-          <CardTitle>Keterangan Sesi</CardTitle>
+          <CardTitle>Rincian Kegiatan</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[60px]">Kode</TableHead>
+                <TableHead className="w-[40px]">No</TableHead>
+                <TableHead>Hari/Tanggal</TableHead>
                 <TableHead>Kegiatan</TableHead>
-                <TableHead>Tanggal</TableHead>
                 <TableHead>Waktu</TableHead>
                 <TableHead>Lokasi</TableHead>
                 <TableHead className="text-center">Hadir</TableHead>
@@ -177,12 +179,12 @@ export default async function RecapPage() {
             <TableBody>
               {sessions.map((s, idx) => (
                 <TableRow key={s.id}>
-                  <TableCell className="font-medium">S{idx + 1}</TableCell>
+                  <TableCell className="font-medium">{idx + 1}</TableCell>
+                  <TableCell>{format(new Date(s.date), 'EEEE, dd MMMM yyyy', { locale: localeId })}</TableCell>
                   <TableCell>{s.title}</TableCell>
-                  <TableCell>{format(new Date(s.date), 'dd MMM yyyy', { locale: localeId })}</TableCell>
-                  <TableCell>{s.startTime} - {s.endTime}</TableCell>
+                  <TableCell>{s.startTime} - {s.endTime} WIB</TableCell>
                   <TableCell>{s.location}</TableCell>
-                  <TableCell className="text-center">{s.attendances.length}</TableCell>
+                  <TableCell className="text-center">{s.attendances.length} orang</TableCell>
                   <TableCell className="text-right">
                     <ExportButton sessionId={s.id} />
                   </TableCell>
